@@ -1,0 +1,124 @@
+import { Avatar, IndexPath, Menu, MenuItem, Text } from "@ui-kitten/components";
+import { useRouter } from "expo-router";
+import { SafeAreaView, StyleSheet, View } from "react-native";
+import BotonPrimario from "../../components/BotonPrimario";
+import { Color } from "../../constants/theme";
+import { useAuth } from "../../services/authContext";
+import Tarjeta from "../../components/Tarjeta";
+import { useState } from "react";
+import { AgendasIcon } from "../../constants/icons";
+
+export default function Configuracion() {
+  const router = useRouter();
+  const { user, loading, logout } = useAuth();
+  const nombreCompleto = user?.nombre;
+  const correo = user?.correo;
+  const [selectedIndex, setSelectedIndex] = useState<IndexPath | undefined>(undefined);
+
+    const handleLogout = async () => {
+      try {
+        await logout();
+        router.replace("/login");
+      } catch (error) {
+        console.log("Error al cerrar sesión:", error);
+      }
+    };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <Tarjeta>
+          <View style={styles.perfil}>
+            <Avatar
+              name={nombreCompleto}
+              status="primary"
+              shape="round"
+              size="giant"
+            />
+
+            <Text category="h5" style={styles.nombre}>
+              {nombreCompleto}
+            </Text>
+          </View>
+
+          <Text category="s1" style={styles.correo}>
+            {correo}
+          </Text>
+
+          {/* CERRAR SESIÓN */}
+          <View style={{ marginTop: 10 }}>
+            <BotonPrimario onPress={handleLogout} disabled={loading}>
+              {loading ? "Cerrando Sesión..." : "Cerrar Sesión"}
+            </BotonPrimario>
+          </View>
+        </Tarjeta>
+
+        <Tarjeta>
+          <Text category="h5" style={{ paddingBottom: 10 }}>
+            General
+          </Text>
+
+          <Menu
+            selectedIndex={selectedIndex}
+            onSelect={(index) => setSelectedIndex(index)}
+          >
+            {/* OPCIÓN AGENDAS */}
+            <MenuItem
+              title={() => <Text category="h6">Agendas</Text>}
+              accessoryLeft={(props) => (
+                <AgendasIcon {...props} selected={selectedIndex?.row === 0} />
+              )}
+              onPress={() => router.push("/agendas")}
+              style={{
+                paddingVertical: 15,
+              }}
+            />
+
+            {/* ITEM */}
+            <MenuItem
+              title={() => <Text category="h6">Otra opción</Text>}
+              accessoryLeft={(props) => (
+                <AgendasIcon {...props} selected={selectedIndex?.row === 1} />
+              )}
+              onPress={() => router.push("/agendas")}
+              style={{
+                paddingVertical: 15,
+              }}
+            />
+          </Menu>
+        </Tarjeta>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Color.background,
+  },
+
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 25,
+    paddingBottom: 20,
+    justifyContent: "space-between",
+  },
+
+  perfil: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  nombre: {
+    flex: 1,
+    flexShrink: 1,
+    marginLeft: 16,
+  },
+
+  correo: {
+    marginTop: 10,
+    alignItems: "center",
+  },
+});
